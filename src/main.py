@@ -1,6 +1,11 @@
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import json
 import time
 from tqdm import tqdm
+from datasets import load_dataset
 from src.config import *
 from src.models import LLMClient, EmbeddingClient
 from src.query_decomposer import QueryDecomposer
@@ -9,24 +14,31 @@ from src.judge import Judge
 from src.tree_processor import TreeProcessor
 from src.aggregator import Aggregator
 
-def load_queries(path: str):
+def load_queries():
+    """Load queries dataset from Hugging Face."""
+    print("Loading queries from Hugging Face...")
+    ds = load_dataset("yixuantt/MultiHopRAG", "MultiHopRAG", split="train")
     queries = []
-    with open(path, 'r') as f:
-        for line in f:
-            queries.append(json.loads(line))
+    for item in ds:
+        queries.append({
+            "id": item["id"],
+            "question": item["text"],
+            "answer": item["answer"]
+        })
     return queries
 
 def main():
     llm = LLMClient(LLM_MODEL, TEMPERATURE)
     embed = EmbeddingClient(EMBEDDING_MODEL)
 
-    retriever = Retriever(CORPUS_PATH, INDEX_PATH, embed, TOP_K, MMR_LAMBDA)
+    # Initialize retriever with batch size from config
+    retriever = Retriever(INDEX_PATH, embed, TOP_K, MMR_LAMBDA, batch_size=BATCH_SIZE)
     decomposer = QueryDecomposer(llm)
     judge = Judge(llm, JUDGE_THRESHOLD)
     processor = TreeProcessor(decomposer, retriever, judge, llm, MAX_DEPTH)
     aggregator = Aggregator(embed, llm, TOP_K, MMR_LAMBDA, MAX_EVIDENCE_LENGTH)
 
-    queries = load_queries(QUERIES_PATH)
+    queries = load_queries()
 
     results = []
     for q in tqdm(queries, desc="Processing queries"):
