@@ -6,19 +6,22 @@ INDEX_PATH = os.path.join(DATA_DIR, "faiss_index.bin")
 
 # Model settings
 LLM_MODEL = "llama3.1:8b"
-EMBEDDING_MODEL = "Alibaba-NLP/gte-Qwen2-1.5B-instruct"
-EMBEDDING_DIM = 1024
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"  # Fast embedding
+EMBEDDING_DIM = 384
 
 # Retrieval settings
 TOP_K = 5
 MMR_LAMBDA = 0.75
 SNIPPET_LENGTH = 300
 MAX_EVIDENCE_LENGTH = 1500
-BATCH_SIZE = 8  # Number of documents to embed at once (adjust based on your RAM)
+BATCH_SIZE = 64
 
 # Tree settings
-MAX_DEPTH = 3
-JUDGE_THRESHOLD = 2.0
+MAX_DEPTH = 2                     # Reduced from 3 → halves LLM calls
+JUDGE_THRESHOLD = 3.0             # Increased from 2.0 → more pruning
 
 # LLM settings
 TEMPERATURE = 0.2
+
+# Parallel processing
+MAX_WORKERS = 4                    # Number of concurrent queries (adjust based on your CPU/GPU)
