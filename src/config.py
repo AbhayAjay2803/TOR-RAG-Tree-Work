@@ -4,12 +4,12 @@ DATA_DIR = "data/multihop_rag"
 INDEX_PATH = os.path.join(DATA_DIR, "faiss_index.bin")
 
 # ========== MODELS ==========
-# You can try other models: "llama3.2:3b" (fast), "llama3.2:1b" (faster), "qwen2.5:7b" (more accurate but heavier)
-LLM_MODEL = "llama3.2:3b"
+# You can switch between models here
+LLM_MODEL = "llama3.2:3b"          # Try "llama3.2:3b" (less censored) or "qwen2.5:3b" (more factual)
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 EMBEDDING_DIM = 384
 
-# Cross-encoder for re‑ranking (optional, set to None to disable)
+# Cross-encoder for re‑ranking
 CROSS_ENCODER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 USE_CROSS_ENCODER = True
 
@@ -29,11 +29,11 @@ NPROBE = 10
 MAX_DEPTH = 3
 JUDGE_THRESHOLD = 2.5
 
-# LLM settings
-TEMPERATURE = 0.2
+# LLM settings – higher temperature for creativity
+TEMPERATURE = 0.8
 
-# Fallback to LLM's own knowledge when retrieval yields low‑confidence answers
+# Fallback to LLM's own knowledge
 FALLBACK_TO_LLM = True
 
-# ========== QUERY LIMIT (for testing) ==========
-MAX_QUERIES = None   # Set to an integer to test only the first N queries
+# Query limit (for testing)
+MAX_QUERIES = None
