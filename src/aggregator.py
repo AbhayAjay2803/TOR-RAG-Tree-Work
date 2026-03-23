@@ -10,12 +10,13 @@ Evidence:
 Original question: {question}
 Answer:"""
 
-LLM_ONLY_PROMPT = """Answer the following question concisely based on your general knowledge. If you don't know, answer "Unknown". Do not mention evidence or lack thereof.
+# More forceful fallback prompts
+LLM_ONLY_PROMPT = """Answer the following question directly with a concise factual answer. Do not add commentary, do not say you are ready, do not mention the absence of evidence. If you don't know, just say "Unknown".
 
 Question: {question}
 Answer:"""
 
-LLM_ONLY_ALT_PROMPT = """I need a concise answer to this question. Use your own knowledge. If you don't know, say "Unknown". Be brief.
+LLM_ONLY_ALT_PROMPT = """Provide a short, factual answer to this question. Be concise and avoid any extra text. If you don't know, simply say "Unknown".
 
 Question: {question}
 Answer:"""
@@ -31,6 +32,23 @@ class Aggregator:
         self.max_length = max_length
         self.fallback_to_llm = fallback_to_llm
         self.judge_threshold = judge_threshold
+
+    def _is_meta_response(self, text: str) -> bool:
+        """Detect if the answer is a meta statement like 'I'm ready...'"""
+        meta_phrases = [
+            "i'm ready", "i am ready", "i can provide", "i will answer",
+            "please provide", "i'd be happy", "i would be happy", "let me know",
+            "what is the question", "what's the question", "i'll answer"
+        ]
+        lower = text.lower()
+        return any(phrase in lower for phrase in meta_phrases)
+
+    def _get_fallback_answer(self, question: str) -> str:
+        """Try two fallback prompts; if first gives meta response, try second."""
+        answer = self.llm.invoke(LLM_ONLY_PROMPT.format(question=question)).strip()
+        if self._is_meta_response(answer):
+            answer = self.llm.invoke(LLM_ONLY_ALT_PROMPT.format(question=question)).strip()
+        return answer
 
     def _evaluate_answer(self, question: str, answer: str, evidence: str = "") -> float:
         if not evidence:
@@ -53,11 +71,7 @@ Score:"""
         # Case 1: No evidence at all
         if not evidence_list:
             if self.fallback_to_llm:
-                answer = self.llm.invoke(LLM_ONLY_PROMPT.format(question=question)).strip()
-                if answer.lower() == "unknown":
-                    # Try alternative prompt
-                    answer = self.llm.invoke(LLM_ONLY_ALT_PROMPT.format(question=question)).strip()
-                return answer
+                return self._get_fallback_answer(question)
             else:
                 return "Unknown"
 
@@ -91,10 +105,8 @@ Score:"""
         # Fallback if low score and enabled
         if score < self.judge_threshold and self.fallback_to_llm:
             print(f"[Low confidence ({score:.1f}), falling back to LLM-only]")
-            fallback_answer = self.llm.invoke(LLM_ONLY_PROMPT.format(question=question)).strip()
-            if fallback_answer.lower() == "unknown":
-                fallback_answer = self.llm.invoke(LLM_ONLY_ALT_PROMPT.format(question=question)).strip()
-            # Return fallback if it's not "Unknown", otherwise keep original
-            if fallback_answer.lower() != "unknown":
+            fallback_answer = self._get_fallback_answer(question)
+            # Return fallback if it's not "Unknown" and not a meta response
+            if fallback_answer.lower() != "unknown" and not self._is_meta_response(fallback_answer):
                 return fallback_answer
         return answer

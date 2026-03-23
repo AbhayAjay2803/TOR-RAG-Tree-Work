@@ -10,16 +10,13 @@ from src.judge import Judge
 from src.tree_processor import TreeProcessor
 from src.aggregator import Aggregator
 
-# Simple conversation memory
 class ConversationMemory:
     def __init__(self):
         self.last_question = None
         self.last_answer = None
 
     def get_context(self, current_question: str) -> str:
-        """If current question is a follow‑up, prepend last QA."""
         if self.last_question and self.last_answer:
-            # Heuristic: if current question is short and likely a follow‑up
             if len(current_question.split()) < 6:
                 return f"Previous question: {self.last_question}\nPrevious answer: {self.last_answer}\nNow: {current_question}"
         return current_question
@@ -59,20 +56,17 @@ def main():
         if not user_input:
             continue
 
-        # Incorporate conversation memory
         context = memory.get_context(user_input)
         if context != user_input:
             print(f"Context added: {context}")
 
-        # Process the question with the full ToR-RAG pipeline
         processor.leaf_evidence = []
-        root = processor.process(context) if context != user_input else processor.process(user_input)
+        root = processor.process(context if context != user_input else user_input)
         final_answer = aggregator.aggregate(context if context != user_input else user_input,
                                             processor.leaf_evidence)
 
         print(f"🤖 AI: {final_answer}")
 
-        # Update memory
         memory.update(user_input, final_answer)
 
 if __name__ == "__main__":
