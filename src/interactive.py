@@ -23,12 +23,30 @@ class ConversationMemory:
     def __init__(self):
         self.last_question = None
         self.last_answer = None
+        self.llm = None   # Will be set later
 
-    def get_context(self, current_question: str) -> str:
-        if self.last_question and self.last_answer:
-            if len(current_question.split()) < 6:
-                return f"Previous question: {self.last_question}\nPrevious answer: {self.last_answer}\nNow: {current_question}"
-        return current_question
+    def set_llm(self, llm):
+        self.llm = llm
+
+    def resolve_followup(self, user_input: str) -> str:
+        """Use the LLM to interpret follow‑up questions that refer to previous context."""
+        if not self.last_question or not self.llm:
+            return user_input
+
+        prompt = f"""You are an assistant that interprets follow‑up questions. The user previously asked:
+
+Previous question: {self.last_question}
+Previous answer: {self.last_answer}
+
+Now the user says: {user_input}
+
+What is the actual question they are asking? Output only the clarified question, without any extra text. If it is a new topic, output the user's input unchanged.
+Clarified question:"""
+        resolved = self.llm.invoke(prompt).strip()
+        # Fallback if the LLM returns something strange
+        if not resolved or len(resolved) < 3:
+            return user_input
+        return resolved
 
     def update(self, question: str, answer: str):
         self.last_question = question
@@ -56,6 +74,7 @@ def main():
                             judge_threshold=JUDGE_THRESHOLD)
 
     memory = ConversationMemory()
+    memory.set_llm(llm)
 
     print("Ready! Type your question (or 'exit' to quit):")
     while True:
@@ -65,17 +84,19 @@ def main():
         if not user_input:
             continue
 
-        context = memory.get_context(user_input)
-        if context != user_input:
-            print(f"Context added: {context}")
+        # Resolve follow‑up references using the LLM
+        resolved_question = memory.resolve_followup(user_input)
+        if resolved_question != user_input:
+            print(f"Interpreted as: {resolved_question}")
 
+        # Process the resolved question
         processor.leaf_evidence = []
-        root = processor.process(context if context != user_input else user_input)
-        final_answer = aggregator.aggregate(context if context != user_input else user_input,
-                                            processor.leaf_evidence)
+        root = processor.process(resolved_question)
+        final_answer = aggregator.aggregate(resolved_question, processor.leaf_evidence)
 
         print(f"🤖 AI: {final_answer}")
 
+        # Update memory with the original user input and the answer
         memory.update(user_input, final_answer)
 
 if __name__ == "__main__":
