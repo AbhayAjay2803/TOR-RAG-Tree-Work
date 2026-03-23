@@ -10,7 +10,12 @@ Evidence:
 Original question: {question}
 Answer:"""
 
-LLM_ONLY_PROMPT = """Answer the following question concisely based on your general knowledge. If you don't know, answer "Unknown".
+LLM_ONLY_PROMPT = """Answer the following question concisely based on your general knowledge. If you don't know, answer "Unknown". Do not mention evidence or lack thereof.
+
+Question: {question}
+Answer:"""
+
+LLM_ONLY_ALT_PROMPT = """I need a concise answer to this question. Use your own knowledge. If you don't know, say "Unknown". Be brief.
 
 Question: {question}
 Answer:"""
@@ -28,9 +33,7 @@ class Aggregator:
         self.judge_threshold = judge_threshold
 
     def _evaluate_answer(self, question: str, answer: str, evidence: str = "") -> float:
-        """Use the judge to score the answer (0‑5). If evidence is empty, evaluate without context."""
         if not evidence:
-            # Use a simple prompt for evaluation without context
             eval_prompt = f"Rate the following answer on a scale of 0‑5 (0 = useless, 5 = perfect) based on correctness and completeness:\nQuestion: {question}\nAnswer: {answer}\nScore:"
         else:
             eval_prompt = f"""You are an evaluator. Rate the following answer on a scale of 0‑5 (0 = useless, 5 = perfect) based on how well it answers the question using the evidence.
@@ -47,15 +50,18 @@ Score:"""
         return score
 
     def aggregate(self, question: str, evidence_list: List[Dict]) -> str:
+        # Case 1: No evidence at all
         if not evidence_list:
-            # No evidence found → fallback to LLM-only
             if self.fallback_to_llm:
-                prompt = LLM_ONLY_PROMPT.format(question=question)
-                return self.llm.invoke(prompt).strip()
+                answer = self.llm.invoke(LLM_ONLY_PROMPT.format(question=question)).strip()
+                if answer.lower() == "unknown":
+                    # Try alternative prompt
+                    answer = self.llm.invoke(LLM_ONLY_ALT_PROMPT.format(question=question)).strip()
+                return answer
             else:
                 return "Unknown"
 
-        # Build evidence string from top_k documents
+        # Build evidence string
         q_emb = self.embed_client.embed([question])[0]
 
         candidates = []
@@ -79,15 +85,16 @@ Score:"""
         prompt = FINAL_PROMPT.format(evidence=evidence_text.strip(), question=question)
         answer = self.llm.invoke(prompt).strip()
 
-        # Self‑critique: evaluate the answer
+        # Self‑critique
         score = self._evaluate_answer(question, answer, evidence_text)
 
-        # If score is low and fallback is enabled, try LLM-only
+        # Fallback if low score and enabled
         if score < self.judge_threshold and self.fallback_to_llm:
             print(f"[Low confidence ({score:.1f}), falling back to LLM-only]")
             fallback_answer = self.llm.invoke(LLM_ONLY_PROMPT.format(question=question)).strip()
-            # Evaluate fallback answer
-            fallback_score = self._evaluate_answer(question, fallback_answer)
-            if fallback_score > score:
+            if fallback_answer.lower() == "unknown":
+                fallback_answer = self.llm.invoke(LLM_ONLY_ALT_PROMPT.format(question=question)).strip()
+            # Return fallback if it's not "Unknown", otherwise keep original
+            if fallback_answer.lower() != "unknown":
                 return fallback_answer
         return answer
