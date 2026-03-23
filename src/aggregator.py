@@ -10,13 +10,12 @@ Evidence:
 Original question: {question}
 Answer:"""
 
-# Strongly directive fallback prompts
-LLM_ONLY_PROMPT = """You are a helpful assistant. Answer the question directly with a concise factual answer. Do not add commentary, do not mention being unable to answer, do not say "I cannot provide information". If you don't know, just say "Unknown".
+LLM_ONLY_PROMPT = """Answer the following question concisely based on your general knowledge. If you don't know, answer "Unknown". Do not mention evidence or lack thereof.
 
 Question: {question}
 Answer:"""
 
-LLM_ONLY_ALT_PROMPT = """Provide a short, factual answer to this question. Be concise and avoid any extra text. If you don't know, simply say "Unknown". Do not refuse to answer.
+LLM_ONLY_ALT_PROMPT = """I need a concise answer to this question. Use your own knowledge. If you don't know, say "Unknown". Be brief.
 
 Question: {question}
 Answer:"""
@@ -32,31 +31,6 @@ class Aggregator:
         self.max_length = max_length
         self.fallback_to_llm = fallback_to_llm
         self.judge_threshold = judge_threshold
-
-    def _is_refusal(self, text: str) -> bool:
-        """Detect if the answer is a refusal or meta statement."""
-        refusal_phrases = [
-            "i cannot provide", "i can't provide", "i am unable", "i'm unable",
-            "cannot answer", "can't answer", "i don't have enough information",
-            "no evidence", "no information", "i don't know", "i'm not sure",
-            "i cannot", "i can't", "unable to", "sorry", "apologize"
-        ]
-        lower = text.lower()
-        # If answer is "Unknown" exactly, treat as refusal? Not exactly, but we'll treat as unknown.
-        if text.strip().lower() == "unknown":
-            return True
-        return any(phrase in lower for phrase in refusal_phrases)
-
-    def _get_fallback_answer(self, question: str, max_attempts: int = 2) -> str:
-        """Try multiple prompts and return first non‑refusal."""
-        prompts = [LLM_ONLY_PROMPT, LLM_ONLY_ALT_PROMPT]
-        for i in range(max_attempts):
-            prompt = prompts[i % len(prompts)]
-            answer = self.llm.invoke(prompt.format(question=question)).strip()
-            if not self._is_refusal(answer):
-                return answer
-        # If all attempts fail, return a generic unknown
-        return "Unknown"
 
     def _evaluate_answer(self, question: str, answer: str, evidence: str = "") -> float:
         if not evidence:
@@ -79,7 +53,10 @@ Score:"""
         # Case 1: No evidence at all
         if not evidence_list:
             if self.fallback_to_llm:
-                return self._get_fallback_answer(question)
+                answer = self.llm.invoke(LLM_ONLY_PROMPT.format(question=question)).strip()
+                if answer.lower() == "unknown":
+                    answer = self.llm.invoke(LLM_ONLY_ALT_PROMPT.format(question=question)).strip()
+                return answer
             else:
                 return "Unknown"
 
@@ -113,8 +90,10 @@ Score:"""
         # Fallback if low score and enabled
         if score < self.judge_threshold and self.fallback_to_llm:
             print(f"[Low confidence ({score:.1f}), falling back to LLM-only]")
-            fallback_answer = self._get_fallback_answer(question)
-            # Return fallback if it's not a refusal
-            if not self._is_refusal(fallback_answer):
+            fallback_answer = self.llm.invoke(LLM_ONLY_PROMPT.format(question=question)).strip()
+            if fallback_answer.lower() == "unknown":
+                fallback_answer = self.llm.invoke(LLM_ONLY_ALT_PROMPT.format(question=question)).strip()
+            # Return fallback if it's not "Unknown", otherwise keep original
+            if fallback_answer.lower() != "unknown":
                 return fallback_answer
         return answer

@@ -1,5 +1,14 @@
-import sys
 import os
+import sys
+import warnings
+
+# Suppress huggingface symlink warning on Windows
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+
+# Filter out the "position_ids" unexpected key warning from transformers
+warnings.filterwarnings("ignore", message=".*position_ids.*")
+warnings.filterwarnings("ignore", category=UserWarning, module="huggingface_hub.file_download")
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.config import *
