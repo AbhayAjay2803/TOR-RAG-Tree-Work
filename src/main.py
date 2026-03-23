@@ -15,24 +15,35 @@ from src.tree_processor import TreeProcessor
 from src.aggregator import Aggregator
 
 def load_queries():
-    """Load queries dataset from Hugging Face."""
     print("Loading queries from Hugging Face...")
     ds = load_dataset("yixuantt/MultiHopRAG", "MultiHopRAG", split="train")
     queries = []
-    for item in ds:
+    # Limit the number of queries if MAX_QUERIES is set
+    total = len(ds) if MAX_QUERIES is None else min(MAX_QUERIES, len(ds))
+    for idx in range(total):
+        item = ds[idx]
+        qid = str(idx)
+        question = item['query']
+        answer = item['answer']
         queries.append({
-            "id": item["id"],
-            "question": item["text"],
-            "answer": item["answer"]
+            "id": qid,
+            "question": question,
+            "answer": answer
         })
+    print(f"Loaded {len(queries)} queries (limit: {MAX_QUERIES if MAX_QUERIES else 'all'})")
     return queries
 
 def main():
     llm = LLMClient(LLM_MODEL, TEMPERATURE)
     embed = EmbeddingClient(EMBEDDING_MODEL)
 
-    # Initialize retriever with batch size from config
-    retriever = Retriever(INDEX_PATH, embed, TOP_K, MMR_LAMBDA, batch_size=BATCH_SIZE)
+    retriever = Retriever(
+        INDEX_PATH, embed, TOP_K, MMR_LAMBDA,
+        batch_size=BATCH_SIZE,
+        hnsw_m=HNSW_M,
+        hnsw_ef_construction=HNSW_EF_CONSTRUCTION,
+        nprobe=NPROBE
+    )
     decomposer = QueryDecomposer(llm)
     judge = Judge(llm, JUDGE_THRESHOLD)
     processor = TreeProcessor(decomposer, retriever, judge, llm, MAX_DEPTH)
