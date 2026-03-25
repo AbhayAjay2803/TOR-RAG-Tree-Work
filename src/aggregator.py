@@ -1,5 +1,6 @@
 from .models import LLMClient, EmbeddingClient
 from .utils import mmr_selection
+from .web_search import web_search
 from typing import List, Dict
 
 FINAL_PROMPT = """Based on the following evidence, answer the original question concisely. If the evidence does not contain enough information, answer "Unknown".
@@ -20,10 +21,30 @@ LLM_ONLY_ALT_PROMPT = """I need a concise answer to this question. Use your own 
 Question: {question}
 Answer:"""
 
+WEB_SEARCH_PROMPT = """The following information was retrieved from a web search. Use it to answer the question concisely. If the information is insufficient, answer "Unknown".
+
+Web search results:
+{search_results}
+
+Question: {question}
+Answer:"""
+
+FACT_CHECK_PROMPT = """You have an answer to a question. You also have web search results. Compare them. If the answer is consistent with the web results, output the original answer. If there is a contradiction or the original answer is incomplete, produce a corrected answer based on the web results. Be concise.
+
+Original answer: {original_answer}
+
+Web search results:
+{search_results}
+
+Question: {question}
+Corrected answer:"""
+
 class Aggregator:
     def __init__(self, embed_client: EmbeddingClient, llm: LLMClient,
                  top_k: int, mmr_lambda: float, max_length: int,
-                 fallback_to_llm: bool = True, judge_threshold: float = 2.5):
+                 fallback_to_llm: bool = True, judge_threshold: float = 2.5,
+                 enable_web_search: bool = False, web_search_max_results: int = 3,
+                 enable_fact_check: bool = False, fact_check_threshold: float = 3.0):
         self.embed_client = embed_client
         self.llm = llm
         self.top_k = top_k
@@ -31,6 +52,10 @@ class Aggregator:
         self.max_length = max_length
         self.fallback_to_llm = fallback_to_llm
         self.judge_threshold = judge_threshold
+        self.enable_web_search = enable_web_search
+        self.web_search_max_results = web_search_max_results
+        self.enable_fact_check = enable_fact_check
+        self.fact_check_threshold = fact_check_threshold
 
     def _evaluate_answer(self, question: str, answer: str, evidence: str = "") -> float:
         if not evidence:
@@ -49,13 +74,41 @@ Score:"""
             score = 0.0
         return score
 
+    def _web_search_fallback(self, question: str) -> str:
+        """Perform web search and return answer."""
+        search_results = web_search(question, self.web_search_max_results)
+        if search_results:
+            return self.llm.invoke(WEB_SEARCH_PROMPT.format(
+                search_results=search_results, question=question)).strip()
+        return "Unknown"
+
+    def _fact_check(self, question: str, answer: str) -> str:
+        """Use web search to verify the answer."""
+        search_results = web_search(question, self.web_search_max_results)
+        if not search_results:
+            return answer
+        prompt = FACT_CHECK_PROMPT.format(
+            original_answer=answer,
+            search_results=search_results,
+            question=question
+        )
+        return self.llm.invoke(prompt).strip()
+
     def aggregate(self, question: str, evidence_list: List[Dict]) -> str:
-        # Case 1: No evidence at all
+        # --- Step 1: Generate initial answer (from retrieval or fallback) ---
         if not evidence_list:
             if self.fallback_to_llm:
                 answer = self.llm.invoke(LLM_ONLY_PROMPT.format(question=question)).strip()
                 if answer.lower() == "unknown":
                     answer = self.llm.invoke(LLM_ONLY_ALT_PROMPT.format(question=question)).strip()
+                # If still unknown and web search enabled, try web search
+                if answer.lower() == "unknown" and self.enable_web_search:
+                    print("[No evidence, trying web search]")
+                    answer = self._web_search_fallback(question)
+                # If answer is not unknown, optionally fact‑check
+                if answer.lower() != "unknown" and self.enable_fact_check:
+                    print("[Fact‑checking answer with web search]")
+                    answer = self._fact_check(question, answer)
                 return answer
             else:
                 return "Unknown"
@@ -93,7 +146,22 @@ Score:"""
             fallback_answer = self.llm.invoke(LLM_ONLY_PROMPT.format(question=question)).strip()
             if fallback_answer.lower() == "unknown":
                 fallback_answer = self.llm.invoke(LLM_ONLY_ALT_PROMPT.format(question=question)).strip()
-            # Return fallback if it's not "Unknown", otherwise keep original
+            # If fallback is still unknown and web search enabled, try web search
+            if fallback_answer.lower() == "unknown" and self.enable_web_search:
+                print("[Fallback unknown, trying web search]")
+                fallback_answer = self._web_search_fallback(question)
+            # Return fallback if it's not "Unknown"
             if fallback_answer.lower() != "unknown":
-                return fallback_answer
+                answer = fallback_answer
+                score = self._evaluate_answer(question, answer, evidence_text)  # re‑evaluate? optional
+            else:
+                answer = fallback_answer
+
+        # Optional fact‑check if answer is not unknown and fact‑check enabled
+        if answer.lower() != "unknown" and self.enable_fact_check:
+            # Only fact‑check if the score is above threshold (to avoid unnecessary calls)
+            if score >= self.fact_check_threshold:
+                print("[Fact‑checking answer with web search]")
+                answer = self._fact_check(question, answer)
+
         return answer

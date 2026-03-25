@@ -37,3 +37,11 @@ FALLBACK_TO_LLM = True
 
 # ========== QUERY LIMIT (for testing) ==========
 MAX_QUERIES = None   # Set to an integer to test only the first N queries
+
+# Web search fallback (when both retrieval and LLM knowledge are insufficient)
+ENABLE_WEB_SEARCH = True
+WEB_SEARCH_MAX_RESULTS = 3
+
+# Fact‑checking: use web search to verify the generated answer
+ENABLE_FACT_CHECK = True
+FACT_CHECK_THRESHOLD = 3.0   # Score above this triggers fact‑check (0‑5)

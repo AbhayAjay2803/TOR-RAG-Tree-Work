@@ -71,7 +71,11 @@ def main():
     processor = TreeProcessor(decomposer, retriever, judge, llm, MAX_DEPTH)
     aggregator = Aggregator(embed, llm, TOP_K, MMR_LAMBDA, MAX_EVIDENCE_LENGTH,
                             fallback_to_llm=FALLBACK_TO_LLM,
-                            judge_threshold=JUDGE_THRESHOLD)
+                            judge_threshold=JUDGE_THRESHOLD,
+                            enable_web_search=ENABLE_WEB_SEARCH,
+                            web_search_max_results=WEB_SEARCH_MAX_RESULTS,
+                            enable_fact_check=ENABLE_FACT_CHECK,
+                            fact_check_threshold=FACT_CHECK_THRESHOLD)
 
     memory = ConversationMemory()
     memory.set_llm(llm)
