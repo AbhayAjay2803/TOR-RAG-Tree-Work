@@ -1,9 +1,9 @@
 {
   "total_queries": 50,
-  "exact_match": 0.56,
-  "f1_score": 0.6571208791208791,
-  "fallback_rate": 0.12,
-  "average_latency_seconds": 1.650031690597534,
+  "exact_match": 0.66,
+  "f1_score": 0.7222222222222221,
+  "fallback_rate": 0.1,
+  "average_latency_seconds": 8.35744861125946,
   "results": [
     {
       "id": "1",
@@ -12,8 +12,7 @@
       "predicted": "Paris.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 1.5556151866912842,
-      "fallback_used": true
+      "latency": 24.08210802078247
     },
     {
       "id": "2",
@@ -22,8 +21,7 @@
       "predicted": "William Shakespeare.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.4027578830718994,
-      "fallback_used": true
+      "latency": 11.59551739692688
     },
     {
       "id": "3",
@@ -32,8 +30,7 @@
       "predicted": "Mount Everest.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.3912804126739502,
-      "fallback_used": true
+      "latency": 11.448942184448242
     },
     {
       "id": "4",
@@ -42,8 +39,7 @@
       "predicted": "Au",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.35446834564208984,
-      "fallback_used": false
+      "latency": 7.3554675579071045
     },
     {
       "id": "5",
@@ -52,18 +48,16 @@
       "predicted": "Leonardo da Vinci.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.40393686294555664,
-      "fallback_used": true
+      "latency": 7.319694995880127
     },
     {
       "id": "6",
       "question": "What is the largest ocean on Earth?",
       "ground_truth": "Pacific Ocean",
       "predicted": "The Pacific Ocean.",
-      "exact_match": false,
-      "f1": 0.8,
-      "latency": 0.4129817485809326,
-      "fallback_used": true
+      "exact_match": true,
+      "f1": 1.0,
+      "latency": 6.613548755645752
     },
     {
       "id": "7",
@@ -72,8 +66,7 @@
       "predicted": "Albert Einstein.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.6860640048980713,
-      "fallback_used": true
+      "latency": 4.755113363265991
     },
     {
       "id": "8",
@@ -82,28 +75,25 @@
       "predicted": "Vatican City.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.5685164928436279,
-      "fallback_used": true
+      "latency": 5.353874444961548
     },
     {
       "id": "9",
       "question": "Who is the CEO of Tesla?",
       "ground_truth": "Elon Musk",
-      "predicted": "Gerald S. Cavalluzzo",
-      "exact_match": false,
-      "f1": 0.0,
-      "latency": 0.502479076385498,
-      "fallback_used": true
+      "predicted": "Elon Musk.",
+      "exact_match": true,
+      "f1": 1.0,
+      "latency": 4.736187934875488
     },
     {
       "id": "10",
       "question": "What is the latest version of Python?",
       "ground_truth": "3.13",
-      "predicted": "Python 3.10 (as of my knowledge cutoff in December 2023)",
+      "predicted": "Python 3.10 (as of my cut-off knowledge date in December 2023)",
       "exact_match": false,
       "f1": 0.0,
-      "latency": 1.0830926895141602,
-      "fallback_used": true
+      "latency": 6.963876008987427
     },
     {
       "id": "11",
@@ -112,18 +102,16 @@
       "predicted": "Argentina.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 18.901715517044067,
-      "fallback_used": true
+      "latency": 4.195457696914673
     },
     {
       "id": "12",
       "question": "What is the current population of India?",
       "ground_truth": "1.4 billion",
-      "predicted": "As of my knowledge cutoff in 2023, the estimated population of India was approximately 1.42 billion people. However, please note that this figure may have changed since then and I recommend checking a reliable source for the most up-to-date information.",
+      "predicted": "Approximately 1.4 billion.",
       "exact_match": false,
-      "f1": 0.05128205128205129,
-      "latency": 1.8100848197937012,
-      "fallback_used": true
+      "f1": 0.8,
+      "latency": 5.0331926345825195
     },
     {
       "id": "13",
@@ -132,28 +120,25 @@
       "predicted": "Rishi Sunak",
       "exact_match": false,
       "f1": 0.0,
-      "latency": 0.5647053718566895,
-      "fallback_used": true
+      "latency": 5.765989780426025
     },
     {
       "id": "14",
       "question": "What is the latest iPhone model?",
       "ground_truth": "iPhone 16",
-      "predicted": "Unknown",
+      "predicted": "Unknown (as of my cut-off date in December 2023).",
       "exact_match": false,
       "f1": 0.0,
-      "latency": 5.676584482192993,
-      "fallback_used": true
+      "latency": 10.45079255104065
     },
     {
       "id": "15",
       "question": "Who won the 2024 US presidential election?",
       "ground_truth": "Donald Trump",
-      "predicted": "Unknown",
+      "predicted": "Unknown (my training data only goes up until December 2023, and I do not have information on future events.)",
       "exact_match": false,
       "f1": 0.0,
-      "latency": 5.528908014297485,
-      "fallback_used": true
+      "latency": 11.620874404907227
     },
     {
       "id": "16",
@@ -162,8 +147,7 @@
       "predicted": "Canberra.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 2.21440052986145,
-      "fallback_used": true
+      "latency": 8.395026683807373
     },
     {
       "id": "17",
@@ -172,18 +156,16 @@
       "predicted": "Jane Austen.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.45539426803588867,
-      "fallback_used": true
+      "latency": 7.940485954284668
     },
     {
       "id": "18",
       "question": "What is the fastest land animal?",
       "ground_truth": "Cheetah",
-      "predicted": "The cheetah.",
-      "exact_match": false,
-      "f1": 0.6666666666666666,
-      "latency": 0.6449418067932129,
-      "fallback_used": true
+      "predicted": "Cheetah.",
+      "exact_match": true,
+      "f1": 1.0,
+      "latency": 13.080148220062256
     },
     {
       "id": "19",
@@ -192,8 +174,7 @@
       "predicted": "8",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.8727986812591553,
-      "fallback_used": false
+      "latency": 9.625796794891357
     },
     {
       "id": "20",
@@ -202,8 +183,7 @@
       "predicted": "Bill Gates.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.42641115188598633,
-      "fallback_used": true
+      "latency": 7.895711898803711
     },
     {
       "id": "21",
@@ -212,8 +192,7 @@
       "predicted": "Yen (JPY)",
       "exact_match": false,
       "f1": 0.6666666666666666,
-      "latency": 0.6014447212219238,
-      "fallback_used": true
+      "latency": 9.46246600151062
     },
     {
       "id": "22",
@@ -222,8 +201,7 @@
       "predicted": "Michelangelo.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.46128416061401367,
-      "fallback_used": true
+      "latency": 7.578638553619385
     },
     {
       "id": "23",
@@ -231,9 +209,8 @@
       "ground_truth": "Nile",
       "predicted": "The Nile River.",
       "exact_match": false,
-      "f1": 0.5,
-      "latency": 0.7203783988952637,
-      "fallback_used": true
+      "f1": 0.6666666666666666,
+      "latency": 11.637209177017212
     },
     {
       "id": "24",
@@ -242,8 +219,7 @@
       "predicted": "Alexander Fleming.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.5461983680725098,
-      "fallback_used": true
+      "latency": 8.185239553451538
     },
     {
       "id": "25",
@@ -252,8 +228,7 @@
       "predicted": "Lacrosse.",
       "exact_match": false,
       "f1": 0.0,
-      "latency": 0.6830480098724365,
-      "fallback_used": true
+      "latency": 7.237396001815796
     },
     {
       "id": "26",
@@ -262,18 +237,16 @@
       "predicted": "F. Scott Fitzgerald.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.6155135631561279,
-      "fallback_used": true
+      "latency": 8.141419887542725
     },
     {
       "id": "27",
       "question": "What is the tallest building in the world?",
       "ground_truth": "Burj Khalifa",
       "predicted": "The Burj Khalifa.",
-      "exact_match": false,
-      "f1": 0.8,
-      "latency": 0.6227767467498779,
-      "fallback_used": true
+      "exact_match": true,
+      "f1": 1.0,
+      "latency": 9.68550968170166
     },
     {
       "id": "28",
@@ -282,8 +255,7 @@
       "predicted": "Freddie Mercury.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 1.4366965293884277,
-      "fallback_used": true
+      "latency": 9.608278036117554
     },
     {
       "id": "29",
@@ -292,8 +264,7 @@
       "predicted": "0\u00b0C.",
       "exact_match": false,
       "f1": 0.0,
-      "latency": 0.6553373336791992,
-      "fallback_used": true
+      "latency": 8.536681890487671
     },
     {
       "id": "30",
@@ -302,8 +273,7 @@
       "predicted": "George Orwell.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.8215787410736084,
-      "fallback_used": true
+      "latency": 9.79236388206482
     },
     {
       "id": "31",
@@ -312,8 +282,7 @@
       "predicted": "Portuguese.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.7319297790527344,
-      "fallback_used": true
+      "latency": 5.408545970916748
     },
     {
       "id": "32",
@@ -322,8 +291,7 @@
       "predicted": "Ant\u00f3nio Guterres.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.8762936592102051,
-      "fallback_used": true
+      "latency": 5.997295379638672
     },
     {
       "id": "33",
@@ -332,78 +300,70 @@
       "predicted": "Android 14 (also known as Android One)",
       "exact_match": false,
       "f1": 0.0,
-      "latency": 1.6221346855163574,
-      "fallback_used": true
+      "latency": 7.919069051742554
     },
     {
       "id": "34",
       "question": "Who is the richest person in the world?",
       "ground_truth": "Bernard Arnault",
-      "predicted": "The answer may vary depending on the source and date, but as of my knowledge cutoff in 2023, Elon Musk was the richest person in the world, with an estimated net worth over $200 billion.",
+      "predicted": "The current richest person in the world varies depending on the source and date. As of my knowledge cutoff in 2023, according to Forbes, Bernard Arnault was the richest person in the world with an estimated net worth of over $230 billion. However, please note that this information may have changed since then.",
       "exact_match": false,
-      "f1": 0.0,
-      "latency": 2.368534803390503,
-      "fallback_used": true
+      "f1": 0.08888888888888888,
+      "latency": 8.856568574905396
     },
     {
       "id": "35",
       "question": "What is the current inflation rate in the US?",
       "ground_truth": "2.4%",
-      "predicted": "Unknown",
+      "predicted": "Unknown (data may change frequently and I'm a large language model, my knowledge cutoff is December 2023).",
       "exact_match": false,
       "f1": 0.0,
-      "latency": 5.919033527374268,
-      "fallback_used": true
+      "latency": 17.503587245941162
     },
     {
       "id": "36",
       "question": "Who won the 2025 Super Bowl?",
       "ground_truth": "Kansas City Chiefs",
-      "predicted": "Unknown",
+      "predicted": "Unknown (my training data only goes up until 2022, and I do not have information on future events.)",
       "exact_match": false,
       "f1": 0.0,
-      "latency": 7.619258880615234,
-      "fallback_used": true
+      "latency": 8.915385007858276
     },
     {
       "id": "37",
       "question": "What is the new COVID variant called?",
       "ground_truth": "XEC",
-      "predicted": "Unknown",
+      "predicted": "Unknown.",
       "exact_match": false,
       "f1": 0.0,
-      "latency": 3.5168616771698,
-      "fallback_used": true
+      "latency": 6.803165912628174
     },
     {
       "id": "38",
       "question": "Who is the CEO of OpenAI?",
       "ground_truth": "Sam Altman",
-      "predicted": "Sam Altman.",
+      "predicted": "Sam Altman",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.7082972526550293,
-      "fallback_used": true
+      "latency": 5.796866178512573
     },
     {
       "id": "39",
       "question": "What is the latest SpaceX mission?",
       "ground_truth": "Starship IFT-5",
-      "predicted": "Unknown",
+      "predicted": "The Starship SN8 test flight in December 2020.",
       "exact_match": false,
-      "f1": 0.0,
-      "latency": 3.703721046447754,
-      "fallback_used": true
+      "f1": 0.22222222222222224,
+      "latency": 7.040786504745483
     },
     {
       "id": "40",
       "question": "Who is the current president of France?",
       "ground_truth": "Emmanuel Macron",
-      "predicted": "Emmanuel Macron.",
+      "predicted": "Emmanuel Macron",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.38668203353881836,
-      "fallback_used": true
+      "latency": 5.2394118309021
     },
     {
       "id": "41",
@@ -412,8 +372,7 @@
       "predicted": "Ulaanbaatar.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.4310154914855957,
-      "fallback_used": true
+      "latency": 9.287228107452393
     },
     {
       "id": "42",
@@ -422,8 +381,7 @@
       "predicted": "Homer.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.36429810523986816,
-      "fallback_used": true
+      "latency": 9.376791954040527
     },
     {
       "id": "43",
@@ -432,8 +390,7 @@
       "predicted": "212\u00b0F.",
       "exact_match": false,
       "f1": 0.0,
-      "latency": 0.3845365047454834,
-      "fallback_used": true
+      "latency": 9.092013120651245
     },
     {
       "id": "44",
@@ -442,8 +399,7 @@
       "predicted": "Holden Caulfield.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.42183589935302734,
-      "fallback_used": true
+      "latency": 10.532177686691284
     },
     {
       "id": "45",
@@ -452,8 +408,7 @@
       "predicted": "Australia.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.36072683334350586,
-      "fallback_used": true
+      "latency": 6.273861408233643
     },
     {
       "id": "46",
@@ -462,18 +417,16 @@
       "predicted": "Neil Armstrong.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.4280858039855957,
-      "fallback_used": true
+      "latency": 6.033146619796753
     },
     {
       "id": "47",
       "question": "What is the chemical formula for water?",
       "ground_truth": "H2O",
-      "predicted": "H2O.",
+      "predicted": "H2O",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.498821496963501,
-      "fallback_used": true
+      "latency": 5.565855979919434
     },
     {
       "id": "48",
@@ -482,18 +435,16 @@
       "predicted": "Vincent van Gogh.",
       "exact_match": true,
       "f1": 1.0,
-      "latency": 0.4605720043182373,
-      "fallback_used": true
+      "latency": 5.432114124298096
     },
     {
       "id": "49",
       "question": "What is the largest desert in the world?",
       "ground_truth": "Antarctic Desert",
       "predicted": "The Antarctic Desert.",
-      "exact_match": false,
-      "f1": 0.8,
-      "latency": 0.5254659652709961,
-      "fallback_used": true
+      "exact_match": true,
+      "f1": 1.0,
+      "latency": 6.053092956542969
     },
     {
       "id": "50",
@@ -501,9 +452,8 @@
       "ground_truth": "Karl Marx",
       "predicted": "Karl Marx and Friedrich Engels.",
       "exact_match": false,
-      "f1": 0.5714285714285715,
-      "latency": 0.5520851612091064,
-      "fallback_used": true
+      "f1": 0.6666666666666666,
+      "latency": 6.652456998825073
     }
   ]
 }
