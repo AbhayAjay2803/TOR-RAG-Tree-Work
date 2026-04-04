@@ -43,7 +43,7 @@ ENABLE_WEB_SEARCH = True
 WEB_SEARCH_MAX_RESULTS = 3
 
 # Fact‑checking: use web search to verify the generated answer
-ENABLE_FACT_CHECK = True
+ENABLE_FACT_CHECK = False
 FACT_CHECK_THRESHOLD = 3.0   # Score above this triggers fact‑check (0‑5)
 
 # Search backend: "wikipedia", "google", or "duckduckgo"
