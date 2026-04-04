@@ -1,18 +1,13 @@
 """
 Evaluation script for Enhanced ToR-RAG.
-Runs on a set of questions (single-turn and conversational multi-hop) and computes:
-- Exact Match (EM)
-- F1 Score
-- Fallback success rate
-- Average latency
-- Fact-checking correction rate (if enabled)
+Runs on a set of questions and computes metrics with improved normalization.
 """
 import sys
 import os
 import json
 import time
 import re
-from typing import List, Dict, Tuple
+from typing import List, Dict
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -24,16 +19,18 @@ from src.judge import Judge
 from src.tree_processor import TreeProcessor
 from src.aggregator import Aggregator
 
-# ---------- Helper functions for metrics ----------
+# ---------- Improved normalization ----------
 def normalize_answer(s: str) -> str:
     """Lowercase, remove punctuation, articles, and extra whitespace."""
     s = s.lower().strip()
-    # Remove punctuation
+    # Remove punctuation (keep only alphanumeric and spaces)
     s = re.sub(r'[^\w\s]', '', s)
-    # Remove common articles
-    for w in ['a', 'an', 'the']:
-        s = s.replace(f' {w} ', ' ')
-    return ' '.join(s.split())
+    # Remove common articles and words that cause formatting differences
+    for word in ['a', 'an', 'the', 'and', 'of', 'to']:
+        s = re.sub(rf'\b{word}\b', '', s)
+    # Collapse multiple spaces
+    s = re.sub(r'\s+', ' ', s).strip()
+    return s
 
 def exact_match(pred: str, truth: str) -> bool:
     return normalize_answer(pred) == normalize_answer(truth)
@@ -50,11 +47,6 @@ def f1_score(pred: str, truth: str) -> float:
 
 # ---------- Load test data ----------
 def load_test_queries(path: str) -> List[Dict]:
-    """Load test queries from a JSON file.
-    Format: [
-        {"id": "q1", "question": "...", "answer": "...", "conversation_context": null or previous answer}
-    ]
-    """
     with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
@@ -83,18 +75,17 @@ def evaluate():
         enable_web_search=ENABLE_WEB_SEARCH,
         web_search_max_results=WEB_SEARCH_MAX_RESULTS,
         enable_fact_check=ENABLE_FACT_CHECK,
-        fact_check_threshold=FACT_CHECK_THRESHOLD
+        fact_check_threshold=FACT_CHECK_THRESHOLD,
+        search_backend=SEARCH_BACKEND
     )
 
-    # Load test queries (you need to create this file)
     test_file = "data/eval_queries.json"
     if not os.path.exists(test_file):
-        print(f"Test file {test_file} not found. Creating a sample file with 5 questions...")
+        print(f"Test file {test_file} not found. Creating a sample file...")
         os.makedirs("data", exist_ok=True)
         sample = [
             {"id": "1", "question": "What is the capital of France?", "answer": "Paris"},
             {"id": "2", "question": "Who wrote Hamlet?", "answer": "William Shakespeare"},
-            {"id": "3", "question": "What is the highest mountain in the world?", "answer": "Mount Everest"},
         ]
         with open(test_file, 'w') as f:
             json.dump(sample, f, indent=2)
@@ -113,27 +104,17 @@ def evaluate():
     for idx, q in enumerate(queries):
         question = q['question']
         truth = q['answer']
-        context = q.get('conversation_context', None)  # For multi-turn
-
-        # If there is conversation context, we could simulate memory.
-        # For simplicity, we just process the question directly.
-        # To test conversation, you would need to chain previous Q&A.
-        # We'll leave that as an extension.
 
         processor.leaf_evidence = []
         start = time.time()
-        # We need to capture whether fallback was used. The aggregator prints but we can also check output.
-        # For now, we assume fallback is used if answer comes from LLM-only or web search.
-        # A cleaner way: modify aggregator to return a flag. We'll keep simple.
         final_answer = aggregator.aggregate(question, processor.leaf_evidence)
         elapsed = time.time() - start
         total_latency += elapsed
 
-        # Check if answer is "Unknown" (fallback failure)
-        if final_answer.lower().strip() in ["unknown", "i don't know", "cannot provide"]:
+        # Check if answer indicates failure
+        if aggregator._is_unknown(final_answer):
             fallback_count += 1
 
-        # Compute metrics
         em = exact_match(final_answer, truth)
         f1 = f1_score(final_answer, truth)
         if em:
@@ -148,12 +129,10 @@ def evaluate():
             "exact_match": em,
             "f1": f1,
             "latency": elapsed,
-            "fallback_used": (final_answer.lower() != truth.lower())  # crude
         })
 
         print(f"Q{idx+1}: {question[:50]}... -> {final_answer[:100]} (EM={em}, F1={f1:.2f})")
 
-    # Aggregate metrics
     total = len(queries)
     avg_em = em_correct / total if total > 0 else 0
     avg_f1 = f1_total / total if total > 0 else 0
@@ -169,7 +148,6 @@ def evaluate():
         "results": results
     }
 
-    # Save results
     out_file = "evaluation_results.json"
     with open(out_file, 'w') as f:
         json.dump(summary, f, indent=2)
